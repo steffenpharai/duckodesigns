@@ -1,0 +1,130 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ProductCategory {
+  poncho
+  pajamas
+  pants
+  shirt
+  booties
+  gloves
+  set
+  accessory
+  other
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String?
+  role         UserRole @default(CUSTOMER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  orders Order[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Product {
+  id                String          @id @default(cuid())
+  name              String
+  price             Float
+  description       String          @db.Text
+  category          ProductCategory
+  images            String[]        @default([])
+  tags              String[]        @default([])
+  fabricOptions     String[]        @default([])
+  sizes             String[]        @default([])
+  featured          Boolean         @default(false)
+  customizable      Boolean         @default(true)
+  turnaround        String
+  isCarSeatFriendly Boolean?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  inventory    Inventory?
+  orderItems   OrderItem[]
+
+  @@index([category])
+  @@index([featured])
+}
+
+model Inventory {
+  id               String   @id @default(cuid())
+  productId        String   @unique
+  quantity         Int      @default(0)
+  reservedQuantity Int      @default(0)
+  lowStockThreshold Int     @default(5)
+  updatedAt        DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+model Order {
+  id                      String      @id @default(cuid())
+  userId                  String?
+  status                  OrderStatus @default(PENDING)
+  name                    String
+  email                   String
+  phone                   String?
+  childSize               String
+  productType             String
+  fabricPreference        String?     @db.Text
+  personalization         String?     @db.Text
+  deadline                DateTime?
+  carSeatFriendlyRequested Boolean    @default(false)
+  imageUrl                String?
+  productId               String?
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
+
+  user       User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  orderItems OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId  String
+  productId String?
+  quantity Int      @default(1)
+  price    Float
+  createdAt DateTime @default(now())
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([productId])
+}
+

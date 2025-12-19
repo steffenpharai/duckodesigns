@@ -1,15 +1,33 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { ProductCard } from "@/components/ProductCard"
-import { products, ProductCategory } from "@/data/products"
+import { ProductCategory } from "@/lib/products"
+import { Product } from "@prisma/client"
 import { Button } from "@/components/ui/button"
 
 const categories: ProductCategory[] = ["poncho", "pajamas", "pants", "shirt", "booties", "gloves", "set", "accessory", "other"]
 
 export default function ShopPage() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | "all">("all")
   const [showCarSeatFriendlyOnly, setShowCarSeatFriendlyOnly] = useState(false)
+
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const response = await fetch('/api/products')
+        const data = await response.json()
+        setProducts(data.products || [])
+      } catch (error) {
+        console.error('Failed to fetch products:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProducts()
+  }, [])
 
   const filteredProducts = useMemo(() => {
     let filtered = products
@@ -30,7 +48,7 @@ export default function ShopPage() {
     }
 
     return filtered
-  }, [selectedCategory, showCarSeatFriendlyOnly])
+  }, [products, selectedCategory, showCarSeatFriendlyOnly])
 
   return (
     <div className="container py-12">
@@ -81,7 +99,11 @@ export default function ShopPage() {
           )}
         </div>
 
-        {filteredProducts.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Loading products...</p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">No products found matching your filters.</p>
           </div>

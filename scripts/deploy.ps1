@@ -74,18 +74,33 @@ if ($UseCloudBuild) {
     }
     
     Write-Host "Deploying to Cloud Run..." -ForegroundColor Cyan
-    gcloud run deploy $ServiceName `
-        --image $imageTag `
-        --region $Region `
-        --platform managed `
-        --allow-unauthenticated `
-        --memory 512Mi `
-        --cpu 1 `
-        --timeout 300 `
-        --max-instances 10 `
-        --min-instances 0 `
-        --port 8080 `
-        --project $ProjectId
+    
+    # Get Cloud SQL connection name if provided
+    $connectionName = Read-Host "Enter Cloud SQL connection name (PROJECT_ID:REGION:INSTANCE_NAME) or press Enter to skip"
+    
+    $deployArgs = @(
+        "run", "deploy", $ServiceName,
+        "--image", $imageTag,
+        "--region", $Region,
+        "--platform", "managed",
+        "--allow-unauthenticated",
+        "--memory", "512Mi",
+        "--cpu", "1",
+        "--timeout", "300",
+        "--max-instances", "10",
+        "--min-instances", "0",
+        "--port", "8080",
+        "--service-account", "$ServiceName-sa@$ProjectId.iam.gserviceaccount.com",
+        "--project", $ProjectId
+    )
+    
+    if ($connectionName) {
+        $deployArgs += "--add-cloudsql-instances"
+        $deployArgs += $connectionName
+        Write-Host "Configuring Cloud SQL connection..." -ForegroundColor Gray
+    }
+    
+    gcloud $deployArgs
     
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Error: Cloud Run deployment failed" -ForegroundColor Red
@@ -105,4 +120,6 @@ Write-Host "`nTo view logs:" -ForegroundColor Yellow
 Write-Host "  gcloud run services logs read $ServiceName --region $Region --project=$ProjectId" -ForegroundColor White
 Write-Host "`nTo update environment variables:" -ForegroundColor Yellow
 Write-Host "  gcloud run services update $ServiceName --region $Region --update-env-vars KEY=VALUE --project=$ProjectId" -ForegroundColor White
+Write-Host "`nTo run database migrations:" -ForegroundColor Yellow
+Write-Host "  .\scripts\migrate.ps1 -ProjectId $ProjectId -ConnectionName PROJECT_ID:REGION:INSTANCE_NAME -DatabaseUrl DATABASE_URL" -ForegroundColor White
 

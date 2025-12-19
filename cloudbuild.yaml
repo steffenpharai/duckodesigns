@@ -2,6 +2,9 @@ substitutions:
   _IMAGE_TAG: 'latest'
   _SERVICE_NAME: 'duckodesigns'
   _REGION: 'us-central1'
+  # Set these in Cloud Build trigger or via gcloud builds submit
+  # _CLOUD_SQL_CONNECTION_NAME: 'PROJECT_ID:REGION:INSTANCE_NAME'
+  # _DATABASE_URL: 'postgresql://user:password@localhost/dbname?host=/cloudsql/PROJECT_ID:REGION:INSTANCE_NAME'
 
 steps:
   # Build the container image
@@ -27,6 +30,15 @@ steps:
       - 'push'
       - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
     id: 'push-image-latest'
+
+  # Run database migrations (optional - uncomment if you want migrations in build)
+  # - name: 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${_IMAGE_TAG}'
+  #   entrypoint: 'npx'
+  #   args: ['prisma', 'migrate', 'deploy']
+  #   env:
+  #     - 'DATABASE_URL=${_DATABASE_URL}'
+  #   id: 'run-migrations'
+  #   waitFor: ['build-image']
 
   # Deploy container image to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -54,6 +66,12 @@ steps:
       - '0'
       - '--port'
       - '8080'
+      - '--service-account'
+      - '${_SERVICE_NAME}-sa@$PROJECT_ID.iam.gserviceaccount.com'
+      - '--add-cloudsql-instances'
+      - '${_CLOUD_SQL_CONNECTION_NAME}'
+      - '--set-env-vars'
+      - 'DATABASE_URL=${_DATABASE_URL}'
     id: 'deploy-cloud-run'
 
   # Ensure public access is enabled

@@ -2,7 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Product } from "@/data/products"
+import { Product } from "@prisma/client"
 
 interface ProductCardProps {
   product: Product
@@ -39,7 +39,7 @@ export function ProductCard({ product }: ProductCardProps) {
           {product.description}
         </p>
         <div className="flex items-center gap-2 mt-2 flex-wrap">
-          {product.isCarSeatFriendly && (
+          {product.isCarSeatFriendly === true && (
             <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-primary/10 text-primary">
               Car-seat friendly
             </span>

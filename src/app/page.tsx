@@ -8,12 +8,20 @@ import { FAQAccordion } from "@/components/FAQAccordion"
 import { HowItWorks } from "@/components/HowItWorks"
 import { SocialButtons } from "@/components/SocialButtons"
 import { CarSeatDisclaimer } from "@/components/CarSeatDisclaimer"
-import { getFeaturedProducts } from "@/data/products"
+import { getFeaturedProducts, Product } from "@/lib/products"
 import { faqs } from "@/content/faq"
 import { siteConfig } from "@/config/site"
 
-export default function HomePage() {
-  const featuredProducts = getFeaturedProducts()
+export const dynamic = 'force-dynamic'
+
+export default async function HomePage() {
+  let featuredProducts: Product[] = []
+  try {
+    featuredProducts = await getFeaturedProducts()
+  } catch (error) {
+    console.error('Failed to fetch featured products:', error)
+    // Continue with empty array if database is not available
+  }
 
   const testimonials = [
     {

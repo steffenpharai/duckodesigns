@@ -4,7 +4,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ProductGallery } from "@/components/ProductGallery"
-import { getProductById, products } from "@/data/products"
+import { getProductById } from "@/lib/products"
+import { getAllProducts } from "@/lib/products"
 import { siteConfig } from "@/config/site"
 
 interface ProductPageProps {
@@ -13,16 +14,13 @@ interface ProductPageProps {
   }
 }
 
-export async function generateStaticParams() {
-  return products.map((product) => ({
-    id: product.id,
-  }))
-}
+// Dynamic route - no static generation
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
-  const product = getProductById(params.id)
+  const product = await getProductById(params.id)
 
   if (!product) {
     return {
@@ -41,8 +39,8 @@ export async function generateMetadata({
   }
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
-  const product = getProductById(params.id)
+export default async function ProductPage({ params }: ProductPageProps) {
+  const product = await getProductById(params.id)
 
   if (!product) {
     notFound()
@@ -105,7 +103,7 @@ export default function ProductPage({ params }: ProductPageProps) {
                 <p className="text-muted-foreground">{product.description}</p>
               </div>
 
-              {product.isCarSeatFriendly && (
+              {product.isCarSeatFriendly === true && (
                 <Card className="bg-primary/5 border-primary/20">
                   <CardContent className="pt-6">
                     <h3 className="font-semibold mb-2 text-primary">Car-Seat Friendly Design</h3>

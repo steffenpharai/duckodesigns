@@ -51,7 +51,10 @@ $apis = @(
     "cloudbuild.googleapis.com",
     "run.googleapis.com",
     "containerregistry.googleapis.com",
-    "artifactregistry.googleapis.com"
+    "artifactregistry.googleapis.com",
+    "sqladmin.googleapis.com",
+    "storage-component.googleapis.com",
+    "storage-api.googleapis.com"
 )
 
 foreach ($api in $apis) {
@@ -77,6 +80,11 @@ gcloud projects add-iam-policy-binding $ProjectId `
     --member="serviceAccount:$cloudBuildSA" `
     --role="roles/iam.serviceAccountUser"
 
+Write-Host "Granting Cloud SQL Client role to Cloud Build service account..." -ForegroundColor Gray
+gcloud projects add-iam-policy-binding $ProjectId `
+    --member="serviceAccount:$cloudBuildSA" `
+    --role="roles/cloudsql.client"
+
 # Create Cloud Run service account (optional, for fine-grained permissions)
 Write-Host "`nCreating Cloud Run service account..." -ForegroundColor Cyan
 $runSA = "$ServiceName-sa@$ProjectId.iam.gserviceaccount.com"
@@ -86,6 +94,17 @@ if ($LASTEXITCODE -ne 0) {
         --display-name="Cloud Run service account for $ServiceName" `
         --project=$ProjectId
 }
+
+# Grant Cloud SQL Client and Storage permissions to Cloud Run service account
+Write-Host "Granting Cloud SQL Client role to Cloud Run service account..." -ForegroundColor Gray
+gcloud projects add-iam-policy-binding $ProjectId `
+    --member="serviceAccount:$runSA" `
+    --role="roles/cloudsql.client"
+
+Write-Host "Granting Storage Object Admin role to Cloud Run service account..." -ForegroundColor Gray
+gcloud projects add-iam-policy-binding $ProjectId `
+    --member="serviceAccount:$runSA" `
+    --role="roles/storage.objectAdmin"
 
 # Configure Docker authentication
 Write-Host "`nConfiguring Docker authentication for Container Registry..." -ForegroundColor Cyan

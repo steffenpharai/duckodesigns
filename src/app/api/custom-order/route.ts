@@ -1,33 +1,99 @@
 import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { createOrder } from "@/lib/orders"
+import { uploadBase64Image } from "@/lib/storage"
+import { logger } from "@/lib/logger"
+import { siteConfig } from "@/config/site"
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
     const body = await request.json()
 
-    // Log the payload (in production, you would save to database or send email)
-    console.log("Custom Order Request:", JSON.stringify(body, null, 2))
+    // Extract and validate required fields
+    const {
+      name,
+      email,
+      phone,
+      childSize,
+      productType,
+      fabricPreference,
+      personalization,
+      deadline,
+      carSeatFriendlyRequested,
+      imageBase64,
+      productId,
+    } = body
 
-    // Here you would typically:
-    // 1. Save to database (e.g., Supabase, MongoDB)
-    // 2. Send email notification (e.g., Resend, SendGrid)
-    // 3. Create order record in your system
+    if (!name || !email || !childSize || !productType) {
+      return NextResponse.json(
+        { success: false, message: "Missing required fields" },
+        { status: 400 }
+      )
+    }
 
-    // Example: Save to database
-    // await db.orders.create({ data: body })
+    // Upload image if provided
+    let imageUrl: string | undefined
+    if (imageBase64) {
+      try {
+        const fileName = `order-${Date.now()}-${name.replace(/[^a-zA-Z0-9]/g, '_')}.jpg`
+        imageUrl = await uploadBase64Image(imageBase64, fileName)
+        logger.info('Order image uploaded', { imageUrl })
+      } catch (error) {
+        logger.error('Failed to upload order image', error)
+        // Continue without image if upload fails
+      }
+    }
 
-    // Example: Send email
+    // Parse deadline if provided
+    let deadlineDate: Date | undefined
+    if (deadline) {
+      deadlineDate = new Date(deadline)
+      if (isNaN(deadlineDate.getTime())) {
+        deadlineDate = undefined
+      }
+    }
+
+    // Create order in database
+    const order = await createOrder({
+      userId: session?.user?.id,
+      name,
+      email,
+      phone: phone || undefined,
+      childSize,
+      productType,
+      fabricPreference: fabricPreference || undefined,
+      personalization: personalization || undefined,
+      deadline: deadlineDate,
+      carSeatFriendlyRequested: carSeatFriendlyRequested || false,
+      imageUrl,
+      productId: productId || undefined,
+    })
+
+    logger.info('Custom order created', {
+      orderId: order.id,
+      email,
+      productType,
+    })
+
+    // TODO: Send email notification
     // await sendEmail({
     //   to: siteConfig.contact.email,
-    //   subject: `New Custom Order from ${body.name}`,
+    //   subject: `New Custom Order from ${name}`,
     //   body: formatOrderEmail(body),
     // })
 
     return NextResponse.json(
-      { success: true, message: "Order request received" },
-      { status: 200 }
+      {
+        success: true,
+        message: "Order request received",
+        orderId: order.id,
+      },
+      { status: 201 }
     )
   } catch (error) {
-    console.error("Error processing order:", error)
+    logger.error("Error processing order", error)
     return NextResponse.json(
       { success: false, message: "Error processing order" },
       { status: 500 }

@@ -1,8 +1,10 @@
 import { MetadataRoute } from "next"
-import { products } from "@/data/products"
+import { getAllProducts } from "@/lib/products"
 import { siteConfig } from "@/config/site"
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export const dynamic = 'force-dynamic'
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = siteConfig.url
 
   const routes = [
@@ -21,13 +23,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: route === "" ? 1 : 0.8,
   }))
 
-  const productRoutes = products.map((product) => ({
-    url: `${baseUrl}/product/${product.id}`,
-    lastModified: new Date(),
-    changeFrequency: "monthly" as const,
-    priority: 0.7,
-  }))
+  try {
+    const products = await getAllProducts()
+    const productRoutes = products.map((product) => ({
+      url: `${baseUrl}/product/${product.id}`,
+      lastModified: product.updatedAt,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    }))
 
-  return [...routes, ...productRoutes]
+    return [...routes, ...productRoutes]
+  } catch (error) {
+    console.error('Failed to fetch products for sitemap:', error)
+    return routes
+  }
 }
 
