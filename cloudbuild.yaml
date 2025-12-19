@@ -2,9 +2,6 @@ substitutions:
   _IMAGE_TAG: 'latest'
   _SERVICE_NAME: 'duckodesigns'
   _REGION: 'us-central1'
-  # Set these in Cloud Build trigger or via gcloud builds submit
-  # _CLOUD_SQL_CONNECTION_NAME: 'PROJECT_ID:REGION:INSTANCE_NAME'
-  # _DATABASE_URL: 'postgresql://user:password@localhost/dbname?host=/cloudsql/PROJECT_ID:REGION:INSTANCE_NAME'
 
 steps:
   # Build the container image
@@ -68,10 +65,6 @@ steps:
       - '8080'
       - '--service-account'
       - '${_SERVICE_NAME}-sa@$PROJECT_ID.iam.gserviceaccount.com'
-      - '--add-cloudsql-instances'
-      - '${_CLOUD_SQL_CONNECTION_NAME}'
-      - '--set-env-vars'
-      - 'DATABASE_URL=${_DATABASE_URL}'
     id: 'deploy-cloud-run'
 
   # Ensure public access is enabled
