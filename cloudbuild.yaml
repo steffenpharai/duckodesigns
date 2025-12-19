@@ -2,6 +2,13 @@ substitutions:
   _IMAGE_TAG: 'latest'
   _SERVICE_NAME: 'duckodesigns'
   _REGION: 'us-central1'
+  _CLOUD_SQL_CONNECTION_NAME: 'ducko-designs:us-central1:duckodesigns-db'
+  # DATABASE_URL is stored in Secret Manager - set via:
+  # echo -n "postgresql://user:pass@localhost/db?host=/cloudsql/..." | gcloud secrets create database-url --data-file=- --project=PROJECT_ID
+availableSecrets:
+  secretManager:
+    - versionName: projects/$PROJECT_ID/secrets/database-url/versions/latest
+      env: 'DATABASE_URL'
 
 steps:
   # Build the container image
@@ -28,16 +35,22 @@ steps:
       - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
     id: 'push-image-latest'
 
-  # Run database migrations (optional - uncomment if you want migrations in build)
-  # - name: 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${_IMAGE_TAG}'
-  #   entrypoint: 'npx'
-  #   args: ['prisma', 'migrate', 'deploy']
-  #   env:
-  #     - 'DATABASE_URL=${_DATABASE_URL}'
-  #   id: 'run-migrations'
-  #   waitFor: ['build-image']
+  # Run database migrations before deployment (production best practice)
+  # Migrations run in Cloud Build with database connection from Secret Manager
+  # For Cloud Build, we use TCP connection to public IP
+  # For Cloud Run, we use Unix socket connection (configured in deployment step)
+  - name: 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${_IMAGE_TAG}'
+    entrypoint: 'npx'
+    args: ['prisma', 'migrate', 'deploy']
+    env:
+      - 'DATABASE_URL=${_DATABASE_URL}'
+    id: 'run-migrations'
+    waitFor: ['push-image-latest']
+    secretEnv: ['DATABASE_URL']
+    # Cloud Build service account must have Cloud SQL Client role
+    # Database URL in secret should use public IP for Cloud Build: postgresql://user:pass@PUBLIC_IP:5432/dbname
 
-  # Deploy container image to Cloud Run
+  # Deploy container image to Cloud Run (only if migrations succeed)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
@@ -65,7 +78,14 @@ steps:
       - '8080'
       - '--service-account'
       - '${_SERVICE_NAME}-sa@$PROJECT_ID.iam.gserviceaccount.com'
+      - '--add-cloudsql-instances'
+      - '${_CLOUD_SQL_CONNECTION_NAME}'
+      - '--update-secrets'
+      - 'DATABASE_URL=cloud-run-database-url:latest'
+      - '--update-env-vars'
+      - 'GCS_BUCKET_NAME=duckodesigns-order-images,GCS_PROJECT_ID=$PROJECT_ID,NEXTAUTH_URL=https://${_SERVICE_NAME}-204661965330.${_REGION}.run.app'
     id: 'deploy-cloud-run'
+    waitFor: ['run-migrations']
 
   # Ensure public access is enabled
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'

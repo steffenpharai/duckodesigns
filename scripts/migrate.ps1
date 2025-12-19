@@ -49,9 +49,8 @@ if ($LASTEXITCODE -ne 0) {
     gcloud run jobs create $jobName `
         --image $imageTag `
         --region $Region `
-        --platform managed `
         --service-account "$ServiceName-sa@$ProjectId.iam.gserviceaccount.com" `
-        --add-cloudsql-instances $ConnectionName `
+        --set-cloudsql-instances $ConnectionName `
         --set-env-vars "DATABASE_URL=$DatabaseUrl" `
         --command "npx" `
         --args "prisma,migrate,deploy" `
@@ -71,6 +70,7 @@ if ($LASTEXITCODE -ne 0) {
         --image $imageTag `
         --region $Region `
         --update-env-vars "DATABASE_URL=$DatabaseUrl" `
+        --set-cloudsql-instances $ConnectionName `
         --project $ProjectId
 }
 
