@@ -1,6 +1,6 @@
 export const siteConfig = {
   name: "Ducko Designs",
-  description: "Premium handmade toddler clothing. Starting with our signature car seat-friendly ponchos, we create customizable clothing designed for everyday use.",
+  description: "Premium handmade toddler clothing & accessories. Custom ponchos, pajamas, booties, gloves, shirts, pants, sets, and more—all designed with care for your little one.",
   url: "https://duckodesigns.com",
   ogImage: "/og-image.jpg",
   owner: {

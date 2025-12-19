@@ -22,6 +22,7 @@ import { siteConfig } from "@/config/site"
 function CustomOrderForm() {
   const searchParams = useSearchParams()
   const productId = searchParams.get("product")
+  const typeParam = searchParams.get("type")
   const product = productId ? getProductById(productId) : null
 
   const [formData, setFormData] = useState({
@@ -29,10 +30,11 @@ function CustomOrderForm() {
     email: "",
     phone: "",
     childSize: "",
-    productType: product?.name || "",
+    productType: (typeParam || product?.category || "") as string,
     fabricPreference: "",
     personalization: "",
     deadline: "",
+    carSeatFriendlyRequested: false,
   })
   const [imageBase64, setImageBase64] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -51,6 +53,15 @@ function CustomOrderForm() {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+      // Reset car-seat friendly if product type changes away from poncho
+      ...(name === "productType" && value !== "poncho" ? { carSeatFriendlyRequested: false } : {}),
+    }))
+  }
+
+  const handleCheckboxChange = (name: string, checked: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: checked,
     }))
   }
 
@@ -86,6 +97,7 @@ function CustomOrderForm() {
           fabricPreference: "",
           personalization: "",
           deadline: "",
+          carSeatFriendlyRequested: false,
         })
         setImageBase64(null)
       } else {
@@ -108,7 +120,7 @@ function CustomOrderForm() {
             <h2 className="text-2xl font-bold">Order Request Received!</h2>
             <p className="text-muted-foreground">
               Thank you for your order request. We&apos;ve received your information 
-              and will contact you shortly to discuss your custom poncho details.
+              and will contact you shortly to discuss your custom order details.
             </p>
             <Button asChild>
               <a href="/shop">Continue Shopping</a>
@@ -124,7 +136,7 @@ function CustomOrderForm() {
       <div className="space-y-6 mb-8">
         <h1 className="text-4xl font-bold">Custom Order Request</h1>
         <p className="text-muted-foreground">
-          Fill out the form below to request a custom poncho. We&apos;ll contact you 
+          Fill out the form below to request custom toddler clothing. We&apos;ll contact you 
           to discuss details, pricing, and timeline.
         </p>
       </div>
@@ -199,16 +211,50 @@ function CustomOrderForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="productType">Product Type</Label>
-              <Input
-                id="productType"
-                name="productType"
-                type="text"
+              <Label htmlFor="productType">Product Type *</Label>
+              <Select
                 value={formData.productType}
-                onChange={handleChange}
-                placeholder="e.g., Classic Car Seat Poncho"
-              />
+                onValueChange={(value) => handleSelectChange("productType", value)}
+                required
+              >
+                <SelectTrigger id="productType">
+                  <SelectValue placeholder="Select product type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="poncho">Poncho</SelectItem>
+                  <SelectItem value="pajamas">Pajamas</SelectItem>
+                  <SelectItem value="pants">Pants</SelectItem>
+                  <SelectItem value="shirt">Shirt</SelectItem>
+                  <SelectItem value="booties">Booties</SelectItem>
+                  <SelectItem value="gloves">Gloves</SelectItem>
+                  <SelectItem value="set">Set</SelectItem>
+                  <SelectItem value="accessory">Accessory</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+
+            {formData.productType === "poncho" && (
+              <div className="space-y-2">
+                <div className="flex items-start gap-2">
+                  <input
+                    type="checkbox"
+                    id="carSeatFriendlyRequested"
+                    checked={formData.carSeatFriendlyRequested}
+                    onChange={(e) => handleCheckboxChange("carSeatFriendlyRequested", e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-gray-300"
+                  />
+                  <div className="flex-1">
+                    <Label htmlFor="carSeatFriendlyRequested" className="cursor-pointer">
+                      Request car-seat strap friendly style
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Our car-seat friendly ponchos are designed so that car seat straps can go underneath, allowing for proper strap placement. This design feature may help address concerns about bulky outerwear interfering with car seat straps.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="fabricPreference">Fabric Preference Notes</Label>

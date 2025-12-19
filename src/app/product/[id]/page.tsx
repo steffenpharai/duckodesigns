@@ -89,10 +89,39 @@ export default function ProductPage({ params }: ProductPageProps) {
             </div>
 
             <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full bg-muted text-sm font-medium capitalize">
+                  {product.category}
+                </span>
+                {product.isCarSeatFriendly && (
+                  <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                    Car-seat friendly
+                  </span>
+                )}
+              </div>
+
               <div>
                 <h2 className="text-xl font-semibold mb-2">Description</h2>
                 <p className="text-muted-foreground">{product.description}</p>
               </div>
+
+              {product.isCarSeatFriendly && (
+                <Card className="bg-primary/5 border-primary/20">
+                  <CardContent className="pt-6">
+                    <h3 className="font-semibold mb-2 text-primary">Car-Seat Friendly Design</h3>
+                    <p className="text-sm text-muted-foreground">
+                      This {product.category} is designed so that car seat straps can go underneath, allowing for proper strap placement. This design feature may help address concerns about bulky outerwear interfering with car seat straps. Always follow your car seat manufacturer&apos;s instructions for proper installation and use.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {product.turnaround && (
+                <div>
+                  <h2 className="text-xl font-semibold mb-2">Turnaround Time</h2>
+                  <p className="text-muted-foreground">{product.turnaround}</p>
+                </div>
+              )}
 
               {product.sizes && product.sizes.length > 0 && (
                 <div>
@@ -142,7 +171,7 @@ export default function ProductPage({ params }: ProductPageProps) {
 
             <div className="pt-4">
               <Button asChild size="lg" className="w-full">
-                <Link href={`/custom-order?product=${product.id}`}>
+                <Link href={`/custom-order?product=${product.id}&type=${product.category}`}>
                   {siteConfig.cta.order}
                 </Link>
               </Button>
@@ -152,8 +181,8 @@ export default function ProductPage({ params }: ProductPageProps) {
               <CardContent className="pt-6">
                 <p className="text-sm text-muted-foreground">
                   <strong>Note:</strong> All products are custom-made to order. 
-                  Please allow 2-3 weeks for production. We&apos;ll work with you to 
-                  create the perfect poncho for your little one.
+                  {product.turnaround ? ` Please allow ${product.turnaround} for production.` : " Please allow 1–2 weeks for production."} We&apos;ll work with you to 
+                  create the perfect {product.category} for your little one.
                 </p>
               </CardContent>
             </Card>

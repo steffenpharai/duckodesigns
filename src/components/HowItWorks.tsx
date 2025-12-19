@@ -5,7 +5,7 @@ export function HowItWorks() {
     {
       icon: ShoppingBag,
       title: "Browse",
-      description: "Explore our collection of car seat-friendly ponchos or get inspired by our custom designs.",
+      description: "Explore our collection of custom toddler clothing & accessories or get inspired by our designs.",
     },
     {
       icon: Palette,
@@ -15,7 +15,7 @@ export function HowItWorks() {
     {
       icon: Truck,
       title: "Delivery",
-      description: "Your custom poncho is handmade with care and delivered to your door, ready to keep your little one warm.",
+      description: "Your custom clothing is handmade with care and delivered to your door, ready for your little one.",
     },
   ]
 
@@ -24,7 +24,7 @@ export function HowItWorks() {
       <div className="text-center space-y-2">
         <h2 className="text-3xl font-bold">How It Works</h2>
         <p className="text-muted-foreground">
-          Getting your perfect poncho is simple
+          Getting your perfect custom clothing is simple
         </p>
       </div>
       <div className="grid grid-cols-1 gap-8 md:grid-cols-3">

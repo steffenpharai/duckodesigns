@@ -5,10 +5,10 @@ import { siteConfig } from "@/config/site"
 
 export const metadata: Metadata = {
   title: "About",
-  description: "Learn about Ducko Designs - a family-owned business creating custom car seat-friendly ponchos for toddlers.",
+  description: "Learn about Ducko Designs - a family-owned business creating custom toddler clothing & accessories.",
   openGraph: {
     title: "About | Ducko Designs",
-    description: "Learn about Ducko Designs - a family-owned business creating custom car seat-friendly ponchos for toddlers.",
+    description: "Learn about Ducko Designs - a family-owned business creating custom toddler clothing & accessories.",
   },
 }
 

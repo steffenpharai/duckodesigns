@@ -29,10 +29,22 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </Link>
       <CardContent className="p-4">
-        <h3 className="font-semibold">{product.name}</h3>
+        <div className="flex items-start justify-between gap-2 mb-1">
+          <h3 className="font-semibold">{product.name}</h3>
+          <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-muted text-muted-foreground capitalize">
+            {product.category}
+          </span>
+        </div>
         <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
           {product.description}
         </p>
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
+          {product.isCarSeatFriendly && (
+            <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-primary/10 text-primary">
+              Car-seat friendly
+            </span>
+          )}
+        </div>
         <p className="text-lg font-bold text-primary mt-2">
           ${product.price.toFixed(2)}
         </p>
