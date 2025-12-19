@@ -29,7 +29,7 @@ A modern, production-ready website for Ducko Designs - a family-owned toddler cl
 
 ### 📋 Next Steps
 - Set up Cloud Build trigger for automated deployments
-- Configure custom domain (if needed)
+- ✅ Custom domain configured (duckodesigns.com)
 - Add environment variables for future integrations (Stripe, Supabase, etc.)
 
 ## Tech Stack
@@ -295,19 +295,120 @@ gcloud run services update duckodesigns `
 gcloud run services logs read duckodesigns --region us-central1 --project your-project-id
 ```
 
-### Custom Domain Setup
+### Custom Domain Setup (duckodesigns.com)
 
-1. **Map custom domain**:
+To map your custom domain `duckodesigns.com` to the Cloud Run service:
+
+#### Prerequisites
+
+1. **Verify domain ownership** (required before creating domain mapping):
+   - Visit [Google Search Console](https://search.google.com/search-console) to verify your domain
+   - Or use: `gcloud domains verify duckodesigns.com --project your-project-id`
+
+#### Step 1: Create Domain Mapping
 
 ```powershell
-gcloud run domain-mappings create `
+gcloud beta run domain-mappings create `
   --service duckodesigns `
-  --domain yourdomain.com `
+  --domain duckodesigns.com `
   --region us-central1 `
   --project your-project-id
 ```
 
-2. **Update DNS records** as instructed by the command output
+This will output the DNS records (A and AAAA records) that need to be configured.
+
+#### Step 2: Set Up Cloud DNS (Recommended)
+
+1. **Create a Cloud DNS managed zone**:
+
+```powershell
+gcloud dns managed-zones create duckodesigns-zone `
+  --dns-name=duckodesigns.com `
+  --description="DNS zone for duckodesigns.com" `
+  --project your-project-id
+```
+
+2. **Get the Cloud DNS nameservers**:
+
+```powershell
+gcloud dns managed-zones describe duckodesigns-zone `
+  --project your-project-id `
+  --format="value(nameServers)"
+```
+
+3. **Add DNS records to Cloud DNS**:
+
+```powershell
+# Start transaction
+gcloud dns record-sets transaction start --zone=duckodesigns-zone --project your-project-id
+
+# Add A records (replace with values from Step 1)
+gcloud dns record-sets transaction add 216.239.32.21 216.239.34.21 216.239.36.21 216.239.38.21 `
+  --name=duckodesigns.com. `
+  --type=A `
+  --ttl=300 `
+  --zone=duckodesigns-zone `
+  --project your-project-id
+
+# Add AAAA records (replace with values from Step 1)
+gcloud dns record-sets transaction add 2001:4860:4802:32::15 2001:4860:4802:34::15 2001:4860:4802:36::15 2001:4860:4802:38::15 `
+  --name=duckodesigns.com. `
+  --type=AAAA `
+  --ttl=300 `
+  --zone=duckodesigns-zone `
+  --project your-project-id
+
+# Execute transaction
+gcloud dns record-sets transaction execute --zone=duckodesigns-zone --project your-project-id
+```
+
+4. **Update nameservers at your domain registrar**:
+   - Log in to your domain registrar (e.g., Squarespace, Google Domains)
+   - Update nameservers to the Cloud DNS nameservers from Step 2.2
+   - Example nameservers: `ns-cloud-c1.googledomains.com`, `ns-cloud-c2.googledomains.com`, etc.
+
+#### Step 3: Verify SSL Certificate Status
+
+Check the domain mapping and SSL certificate status:
+
+```powershell
+# Check overall status
+gcloud beta run domain-mappings describe --domain duckodesigns.com `
+  --region us-central1 `
+  --project your-project-id
+
+# Check certificate status
+gcloud beta run domain-mappings describe --domain duckodesigns.com `
+  --region us-central1 `
+  --project your-project-id `
+  --format="value(status.conditions[?type=='CertificateProvisioned'].status,status.conditions[?type=='CertificateProvisioned'].message)"
+
+# Check ready status
+gcloud beta run domain-mappings describe --domain duckodesigns.com `
+  --region us-central1 `
+  --project your-project-id `
+  --format="value(status.conditions[?type=='Ready'].status,status.conditions[?type=='Ready'].message)"
+```
+
+#### Step 4: Verify DNS Propagation
+
+```powershell
+# Check if DNS has propagated
+nslookup -type=A duckodesigns.com 8.8.8.8
+
+# Verify nameservers
+nslookup -type=NS duckodesigns.com
+```
+
+#### Status Indicators
+
+- **CertificatePending**: DNS records are configured, waiting for SSL certificate provisioning (15-60 minutes)
+- **Ready: True**: Domain is active and accessible
+- **DomainRoutable: True**: Domain mapping is correctly configured
+
+Once DNS has propagated and the SSL certificate is provisioned, `duckodesigns.com` will be live and accessible over HTTPS.
+
+**Note**: DNS propagation typically takes 1-4 hours (up to 48 hours). SSL certificate provisioning begins automatically once DNS records are detected and usually completes within 15-60 minutes.
 
 ### Monitoring and Management
 
