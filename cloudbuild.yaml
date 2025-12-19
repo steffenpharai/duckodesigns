@@ -1,5 +1,5 @@
 substitutions:
-  _IMAGE_TAG: '${SHORT_SHA}'
+  _IMAGE_TAG: 'latest'
   _SERVICE_NAME: 'duckodesigns'
   _REGION: 'us-central1'
 
