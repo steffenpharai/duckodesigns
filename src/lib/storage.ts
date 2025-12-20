@@ -142,3 +142,84 @@ export async function uploadBase64Image(
   return uploadImage(fileBuffer, fileName, contentType)
 }
 
+/**
+ * Upload a product image to Cloud Storage
+ * @param fileBuffer - The file buffer to upload
+ * @param productId - The product ID
+ * @param fileName - The desired file name
+ * @param contentType - MIME type of the file
+ * @returns The public URL of the uploaded file
+ */
+export async function uploadProductImage(
+  fileBuffer: Buffer,
+  productId: string,
+  fileName: string,
+  contentType: string = 'image/jpeg'
+): Promise<string> {
+  try {
+    const storage = getStorage()
+    const bucketName = process.env.GCS_BUCKET_NAME!
+
+    // Generate unique filename with timestamp
+    const timestamp = Date.now()
+    const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_')
+    const uniqueFileName = `products/${productId}/${timestamp}-${sanitizedFileName}`
+
+    const bucket = storage.bucket(bucketName)
+    const file = bucket.file(uniqueFileName)
+
+    // Upload file
+    await file.save(fileBuffer, {
+      metadata: {
+        contentType,
+        cacheControl: 'public, max-age=31536000',
+      },
+      public: true, // Make file publicly readable
+    })
+
+    // Get public URL
+    const publicUrl = `https://storage.googleapis.com/${bucketName}/${uniqueFileName}`
+
+    logger.info('Product image uploaded to Cloud Storage', {
+      fileName: uniqueFileName,
+      bucket: bucketName,
+      productId,
+    })
+
+    return publicUrl
+  } catch (error) {
+    logger.error('Failed to upload product image to Cloud Storage', error)
+    throw error
+  }
+}
+
+/**
+ * Upload base64 product image to Cloud Storage
+ * @param base64Data - Base64 encoded image data (with or without data URL prefix)
+ * @param productId - The product ID
+ * @param fileName - The desired file name
+ * @returns The public URL of the uploaded file
+ */
+export async function uploadBase64ProductImage(
+  base64Data: string,
+  productId: string,
+  fileName: string
+): Promise<string> {
+  // Remove data URL prefix if present
+  const base64String = base64Data.replace(/^data:image\/\w+;base64,/, '')
+  
+  // Determine content type from base64 data or default to jpeg
+  let contentType = 'image/jpeg'
+  if (base64Data.startsWith('data:image/')) {
+    const match = base64Data.match(/^data:image\/(\w+);base64,/)
+    if (match) {
+      contentType = `image/${match[1]}`
+    }
+  }
+
+  // Convert base64 to buffer
+  const fileBuffer = Buffer.from(base64String, 'base64')
+
+  return uploadProductImage(fileBuffer, productId, fileName, contentType)
+}
+

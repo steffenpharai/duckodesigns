@@ -55,23 +55,28 @@ if ($LASTEXITCODE -eq 0) {
 } else {
     Write-Host "Creating Cloud SQL PostgreSQL instance..." -ForegroundColor Cyan
     
-    $createArgs = @(
-        "sql", "instances", "create", $InstanceName,
-        "--database-version=POSTGRES_15",
-        "--tier=$Tier",
-        "--region=$Region",
-        "--project=$ProjectId"
-    )
-    
     if ($UsePrivateIP) {
         Write-Host "Configuring private IP (recommended for Cloud Run)..." -ForegroundColor Gray
-        $createArgs += "--network=default"
-        $createArgs += "--no-assign-ip"
-    } else {
-        Write-Host "Configuring public IP..." -ForegroundColor Gray
+        Write-Host "Note: Private IP requires VPC connector. Using public IP for now." -ForegroundColor Yellow
+        $UsePrivateIP = $false
     }
     
-    gcloud $createArgs
+    if ($UsePrivateIP) {
+        gcloud sql instances create $InstanceName `
+            --database-version=POSTGRES_15 `
+            --tier=$Tier `
+            --region=$Region `
+            --network=default `
+            --no-assign-ip `
+            --project=$ProjectId
+    } else {
+        Write-Host "Configuring public IP..." -ForegroundColor Gray
+        gcloud sql instances create $InstanceName `
+            --database-version=POSTGRES_15 `
+            --tier=$Tier `
+            --region=$Region `
+            --project=$ProjectId
+    }
     
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Error: Failed to create Cloud SQL instance" -ForegroundColor Red

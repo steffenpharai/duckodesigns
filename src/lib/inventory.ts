@@ -178,3 +178,21 @@ export async function getAvailableQuantity(productId: string): Promise<number> {
   return inventory.quantity - inventory.reservedQuantity
 }
 
+/**
+ * Create inventory for a product
+ */
+export async function createInventory(
+  productId: string,
+  quantity: number = 0,
+  lowStockThreshold: number = 5
+) {
+  return prisma.inventory.create({
+    data: {
+      productId,
+      quantity,
+      reservedQuantity: 0,
+      lowStockThreshold,
+    },
+  })
+}
+

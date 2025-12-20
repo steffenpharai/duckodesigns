@@ -13,14 +13,16 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 
 # Install OpenSSL for Prisma (required for Alpine)
-RUN apk add --no-cache openssl1.1-compat libc6-compat
+RUN apk add --no-cache openssl openssl-dev
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Set environment variable for build
+# Set environment variables for build
 ENV NEXT_TELEMETRY_DISABLED 1
+# Dummy DATABASE_URL for build (not used at runtime - Cloud Run uses Secret Manager)
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 
 # Generate Prisma Client
 RUN npx prisma generate
@@ -36,7 +38,7 @@ ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
 # Install OpenSSL for Prisma (required for Alpine)
-RUN apk add --no-cache openssl1.1-compat libc6-compat
+RUN apk add --no-cache openssl openssl-dev
 
 # Create a non-root user
 RUN addgroup --system --gid 1001 nodejs

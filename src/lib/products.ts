@@ -1,6 +1,7 @@
 import { prisma } from './db'
 import { Product, ProductCategory } from '@prisma/client'
 import { NotFoundError } from './errors'
+import { createInventory } from './inventory'
 
 export type { Product, ProductCategory }
 
@@ -88,8 +89,10 @@ export async function createProduct(data: {
   customizable?: boolean
   turnaround: string
   isCarSeatFriendly?: boolean | null
+  initialQuantity?: number
+  lowStockThreshold?: number
 }): Promise<Product> {
-  return prisma.product.create({
+  const product = await prisma.product.create({
     data: {
       name: data.name,
       price: data.price,
@@ -105,6 +108,15 @@ export async function createProduct(data: {
       isCarSeatFriendly: data.isCarSeatFriendly ?? null,
     },
   })
+
+  // Create inventory record for the product
+  await createInventory(
+    product.id,
+    data.initialQuantity ?? 0,
+    data.lowStockThreshold ?? 5
+  )
+
+  return product
 }
 
 /**

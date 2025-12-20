@@ -98,3 +98,4 @@ Write-Host "========================================" -ForegroundColor Green
 Write-Host "`nSecrets are now stored securely in Secret Manager." -ForegroundColor Cyan
 Write-Host "Cloud Build and Cloud Run can access them automatically." -ForegroundColor Cyan
 
+
