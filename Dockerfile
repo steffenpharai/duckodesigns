@@ -12,6 +12,9 @@ RUN npm ci
 FROM node:18-alpine AS builder
 WORKDIR /app
 
+# Install OpenSSL for Prisma (required for Alpine)
+RUN apk add --no-cache openssl1.1-compat libc6-compat
+
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -31,6 +34,9 @@ WORKDIR /app
 
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
+
+# Install OpenSSL for Prisma (required for Alpine)
+RUN apk add --no-cache openssl1.1-compat libc6-compat
 
 # Create a non-root user
 RUN addgroup --system --gid 1001 nodejs
