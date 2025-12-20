@@ -51,22 +51,23 @@ export default function ShopPage() {
   }, [products, selectedCategory, showCarSeatFriendlyOnly])
 
   return (
-    <div className="container py-12">
-      <div className="space-y-8">
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold">Shop All Products</h1>
-          <p className="text-muted-foreground text-lg">
+    <div className="container py-8 md:py-12">
+      <div className="space-y-6 md:space-y-8">
+        <div className="text-center space-y-3 md:space-y-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">Shop All Products</h1>
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
             Browse our collection of custom toddler clothing & accessories
           </p>
         </div>
 
         {/* Filters */}
-        <div className="space-y-4">
-          <div className="flex flex-wrap gap-2">
+        <div className="space-y-3 md:space-y-4">
+          <div className="flex flex-wrap gap-2 overflow-x-auto pb-2 md:pb-0">
             <Button
               variant={selectedCategory === "all" ? "default" : "outline"}
               size="sm"
               onClick={() => setSelectedCategory("all")}
+              className="min-h-[44px] min-w-[60px]"
             >
               All
             </Button>
@@ -76,7 +77,7 @@ export default function ShopPage() {
                 variant={selectedCategory === category ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedCategory(category)}
-                className="capitalize"
+                className="capitalize min-h-[44px] whitespace-nowrap"
               >
                 {category}
               </Button>
@@ -90,9 +91,9 @@ export default function ShopPage() {
                 id="carSeatFriendly"
                 checked={showCarSeatFriendlyOnly}
                 onChange={(e) => setShowCarSeatFriendlyOnly(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300"
+                className="h-5 w-5 rounded border-gray-300 cursor-pointer"
               />
-              <label htmlFor="carSeatFriendly" className="text-sm font-medium cursor-pointer">
+              <label htmlFor="carSeatFriendly" className="text-sm sm:text-base font-medium cursor-pointer min-h-[44px] flex items-center">
                 Car-seat friendly only
               </label>
             </div>
@@ -101,14 +102,14 @@ export default function ShopPage() {
 
         {loading ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">Loading products...</p>
+            <p className="text-sm sm:text-base text-muted-foreground">Loading products...</p>
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">No products found matching your filters.</p>
+            <p className="text-sm sm:text-base text-muted-foreground">No products found matching your filters.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

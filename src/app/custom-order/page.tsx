@@ -113,16 +113,16 @@ function CustomOrderForm() {
 
   if (isSuccess) {
     return (
-      <div className="container py-12 max-w-2xl">
+      <div className="container py-8 md:py-12 max-w-2xl">
         <Card>
-          <CardContent className="pt-6 text-center space-y-4">
-            <CheckCircle2 className="h-16 w-16 text-primary mx-auto" />
-            <h2 className="text-2xl font-bold">Order Request Received!</h2>
-            <p className="text-muted-foreground">
+          <CardContent className="pt-4 md:pt-6 text-center space-y-4">
+            <CheckCircle2 className="h-12 w-12 sm:h-16 sm:w-16 text-primary mx-auto" />
+            <h2 className="text-xl sm:text-2xl font-bold">Order Request Received!</h2>
+            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
               Thank you for your order request. We&apos;ve received your information 
               and will contact you shortly to discuss your custom order details.
             </p>
-            <Button asChild>
+            <Button asChild className="min-h-[44px]">
               <a href="/shop">Continue Shopping</a>
             </Button>
           </CardContent>
@@ -132,23 +132,23 @@ function CustomOrderForm() {
   }
 
   return (
-    <div className="container py-12 max-w-2xl">
-      <div className="space-y-6 mb-8">
-        <h1 className="text-4xl font-bold">Custom Order Request</h1>
-        <p className="text-muted-foreground">
+    <div className="container py-8 md:py-12 max-w-2xl">
+      <div className="space-y-4 md:space-y-6 mb-6 md:mb-8">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">Custom Order Request</h1>
+        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
           Fill out the form below to request custom toddler clothing. We&apos;ll contact you 
           to discuss details, pricing, and timeline.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Contact Information</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">Contact Information</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 md:space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
+              <Label htmlFor="name" className="text-sm sm:text-base">Name *</Label>
               <Input
                 id="name"
                 name="name"
@@ -156,11 +156,12 @@ function CustomOrderForm() {
                 required
                 value={formData.name}
                 onChange={handleChange}
+                className="min-h-[44px] text-base"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email" className="text-sm sm:text-base">Email *</Label>
               <Input
                 id="email"
                 name="email"
@@ -168,17 +169,19 @@ function CustomOrderForm() {
                 required
                 value={formData.email}
                 onChange={handleChange}
+                className="min-h-[44px] text-base"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone (Optional)</Label>
+              <Label htmlFor="phone" className="text-sm sm:text-base">Phone (Optional)</Label>
               <Input
                 id="phone"
                 name="phone"
                 type="tel"
                 value={formData.phone}
                 onChange={handleChange}
+                className="min-h-[44px] text-base"
               />
             </div>
           </CardContent>
@@ -186,17 +189,17 @@ function CustomOrderForm() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Order Details</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">Order Details</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 md:space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="childSize">Child Size *</Label>
+              <Label htmlFor="childSize" className="text-sm sm:text-base">Child Size *</Label>
               <Select
                 value={formData.childSize}
                 onValueChange={(value) => handleSelectChange("childSize", value)}
                 required
               >
-                <SelectTrigger id="childSize">
+                <SelectTrigger id="childSize" className="min-h-[44px] text-base">
                   <SelectValue placeholder="Select size" />
                 </SelectTrigger>
                 <SelectContent>
@@ -211,13 +214,13 @@ function CustomOrderForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="productType">Product Type *</Label>
+              <Label htmlFor="productType" className="text-sm sm:text-base">Product Type *</Label>
               <Select
                 value={formData.productType}
                 onValueChange={(value) => handleSelectChange("productType", value)}
                 required
               >
-                <SelectTrigger id="productType">
+                <SelectTrigger id="productType" className="min-h-[44px] text-base">
                   <SelectValue placeholder="Select product type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -236,19 +239,19 @@ function CustomOrderForm() {
 
             {formData.productType === "poncho" && (
               <div className="space-y-2">
-                <div className="flex items-start gap-2">
+                <div className="flex items-start gap-3">
                   <input
                     type="checkbox"
                     id="carSeatFriendlyRequested"
                     checked={formData.carSeatFriendlyRequested}
                     onChange={(e) => handleCheckboxChange("carSeatFriendlyRequested", e.target.checked)}
-                    className="mt-1 h-4 w-4 rounded border-gray-300"
+                    className="mt-1 h-5 w-5 rounded border-gray-300 cursor-pointer flex-shrink-0"
                   />
-                  <div className="flex-1">
-                    <Label htmlFor="carSeatFriendlyRequested" className="cursor-pointer">
+                  <div className="flex-1 min-w-0">
+                    <Label htmlFor="carSeatFriendlyRequested" className="cursor-pointer text-sm sm:text-base block min-h-[44px] flex items-center">
                       Request car-seat strap friendly style
                     </Label>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">
                       Our car-seat friendly ponchos are designed so that car seat straps can go underneath, allowing for proper strap placement. This design feature may help address concerns about bulky outerwear interfering with car seat straps.
                     </p>
                   </div>
@@ -257,7 +260,7 @@ function CustomOrderForm() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="fabricPreference">Fabric Preference Notes</Label>
+              <Label htmlFor="fabricPreference" className="text-sm sm:text-base">Fabric Preference Notes</Label>
               <Textarea
                 id="fabricPreference"
                 name="fabricPreference"
@@ -265,11 +268,12 @@ function CustomOrderForm() {
                 onChange={handleChange}
                 placeholder="Tell us about your fabric preferences, colors, patterns, etc."
                 rows={4}
+                className="text-base resize-y min-h-[100px]"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="personalization">Personalization Details</Label>
+              <Label htmlFor="personalization" className="text-sm sm:text-base">Personalization Details</Label>
               <Textarea
                 id="personalization"
                 name="personalization"
@@ -277,17 +281,19 @@ function CustomOrderForm() {
                 onChange={handleChange}
                 placeholder="Any special requests, embroidery, or customization ideas?"
                 rows={4}
+                className="text-base resize-y min-h-[100px]"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="deadline">Needed By (Optional)</Label>
+              <Label htmlFor="deadline" className="text-sm sm:text-base">Needed By (Optional)</Label>
               <Input
                 id="deadline"
                 name="deadline"
                 type="date"
                 value={formData.deadline}
                 onChange={handleChange}
+                className="min-h-[44px] text-base"
               />
             </div>
           </CardContent>
@@ -295,7 +301,7 @@ function CustomOrderForm() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Reference Image (Optional)</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">Reference Image (Optional)</CardTitle>
           </CardHeader>
           <CardContent>
             <ImageUpload
@@ -305,7 +311,7 @@ function CustomOrderForm() {
           </CardContent>
         </Card>
 
-        <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+        <Button type="submit" size="lg" className="w-full min-h-[44px]" disabled={isSubmitting}>
           {isSubmitting ? "Submitting..." : "Submit Order Request"}
         </Button>
       </form>

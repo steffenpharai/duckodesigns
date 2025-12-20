@@ -1,8 +1,6 @@
 import { NextAuthOptions } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
-import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from './db'
-import { verifyPassword } from './password'
 import { UserRole } from '@prisma/client'
 
 export const authOptions: NextAuthOptions = {
@@ -11,71 +9,83 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     }),
-    CredentialsProvider({
-      name: 'Credentials',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null
-        }
-
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        })
-
-        if (!user || !user.passwordHash) {
-          return null
-        }
-
-        const isValid = await verifyPassword(credentials.password, user.passwordHash)
-
-        if (!isValid) {
-          return null
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name || undefined,
-          role: user.role,
-        }
-      },
-    }),
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account?.provider === 'google') {
-        // Check if user exists, create if not
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email! },
-        })
-
-        if (!existingUser) {
-          await prisma.user.create({
-            data: {
-              email: user.email!,
-              name: user.name || null,
-              role: UserRole.CUSTOMER,
-            },
+        try {
+          // Check if user exists, create if not
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email! },
           })
+
+          if (!existingUser) {
+            await prisma.user.create({
+              data: {
+                email: user.email!,
+                name: user.name || null,
+                role: UserRole.CUSTOMER,
+              },
+            })
+          }
+          return true
+        } catch (error) {
+          console.error('Error during sign in:', error)
+          return false
         }
       }
       return true
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string
-        session.user.role = token.role as UserRole
+      if (session.user && token.id) {
+        // Fetch latest user data to ensure role is up to date
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { id: true, email: true, name: true, role: true },
+          })
+
+          if (dbUser) {
+            session.user.id = dbUser.id
+            session.user.email = dbUser.email
+            session.user.name = dbUser.name
+            session.user.role = dbUser.role
+          } else {
+            // Fallback to token if user not found
+            session.user.id = token.id as string
+            session.user.role = token.role as UserRole
+          }
+        } catch (error) {
+          console.error('Error fetching user in session callback:', error)
+          // Fallback to token values
+          session.user.id = token.id as string
+          session.user.role = token.role as UserRole
+        }
       }
       return session
     },
     async jwt({ token, user, account }) {
+      // Initial sign in
       if (user) {
-        token.id = user.id
-        token.role = user.role
+        // Fetch user from database to get latest role
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: user.email! },
+            select: { id: true, role: true },
+          })
+
+          if (dbUser) {
+            token.id = dbUser.id
+            token.role = dbUser.role
+          } else {
+            token.id = user.id
+            token.role = UserRole.CUSTOMER
+          }
+        } catch (error) {
+          console.error('Error fetching user in JWT callback:', error)
+          token.id = user.id
+          token.role = UserRole.CUSTOMER
+        }
       }
       return token
     },

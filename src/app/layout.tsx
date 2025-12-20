@@ -16,6 +16,16 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   metadataBase: new URL(siteConfig.url),
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "default",
+    "format-detection": "telephone=no",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: siteConfig.name,
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -35,6 +45,14 @@ export const metadata: Metadata = {
   },
 }
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: "cover" as const,
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -44,7 +62,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Header />
-        <main className="min-h-screen">{children}</main>
+        <main className="min-h-screen pb-20 md:pb-0">{children}</main>
         <Footer />
         <StickyCTA />
         <Toaster />

@@ -42,21 +42,21 @@ export default async function HomePage() {
     <>
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-secondary/10">
-        <div className="container py-20 md:py-32">
-          <div className="grid gap-8 md:grid-cols-2 md:gap-12 items-center">
-            <div className="space-y-6">
-              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+        <div className="container py-12 md:py-20 lg:py-32">
+          <div className="grid gap-6 md:gap-8 md:grid-cols-2 lg:gap-12 items-center">
+            <div className="space-y-4 md:space-y-6">
+              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
                 Custom Toddler Clothing
                 <span className="text-primary"> & Accessories</span>
               </h1>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed">
                 Premium handmade toddler clothing designed with care. From car-seat friendly ponchos to cozy pajamas, booties, and more—each piece is custom-made for your little one.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button asChild size="lg">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <Button asChild size="lg" className="min-h-[44px]">
                   <Link href="/shop">{siteConfig.cta.shop}</Link>
                 </Button>
-                <Button asChild variant="outline" size="lg">
+                <Button asChild variant="outline" size="lg" className="min-h-[44px]">
                   <Link href="/custom-order">{siteConfig.cta.order}</Link>
                 </Button>
               </div>
@@ -83,12 +83,12 @@ export default async function HomePage() {
       </section>
 
       {/* Car Seat Friendly Highlight */}
-      <section className="py-16">
+      <section className="py-12 md:py-16">
         <div className="container">
-          <div className="grid gap-8 md:grid-cols-2 items-center">
-            <div className="space-y-4">
-              <h2 className="text-3xl font-bold">Car-Seat Friendly Ponchos Available</h2>
-              <p className="text-lg text-muted-foreground">
+          <div className="grid gap-6 md:gap-8 md:grid-cols-2 items-center">
+            <div className="space-y-3 md:space-y-4">
+              <h2 className="text-2xl sm:text-3xl font-bold">Car-Seat Friendly Ponchos Available</h2>
+              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
                 Our car-seat friendly ponchos are designed so that car seat straps can go underneath, allowing for proper strap placement. This design feature may help address concerns about bulky outerwear interfering with car seat straps. Always follow your car seat manufacturer&apos;s instructions for proper installation and use.
               </p>
               <ul className="space-y-2 list-disc list-inside text-muted-foreground">
@@ -113,21 +113,21 @@ export default async function HomePage() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-12 md:py-16 bg-muted/30">
         <div className="container">
-          <div className="text-center space-y-4 mb-12">
-            <h2 className="text-3xl font-bold">Featured Products</h2>
-            <p className="text-muted-foreground">
+          <div className="text-center space-y-3 md:space-y-4 mb-8 md:mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold">Featured Products</h2>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Explore our most popular custom toddler clothing & accessories
             </p>
           </div>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {featuredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
-          <div className="text-center mt-12">
-            <Button asChild size="lg">
+          <div className="text-center mt-8 md:mt-12">
+            <Button asChild size="lg" className="min-h-[44px]">
               <Link href="/shop">View All Products</Link>
             </Button>
           </div>
@@ -135,29 +135,29 @@ export default async function HomePage() {
       </section>
 
       {/* How It Works */}
-      <section className="py-16">
+      <section className="py-12 md:py-16">
         <div className="container">
           <HowItWorks />
         </div>
       </section>
 
       {/* Testimonials */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-12 md:py-16 bg-muted/30">
         <div className="container">
-          <div className="text-center space-y-4 mb-12">
-            <h2 className="text-3xl font-bold">What Parents Say</h2>
-            <p className="text-muted-foreground">
+          <div className="text-center space-y-3 md:space-y-4 mb-8 md:mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold">What Parents Say</h2>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Real feedback from families who love our custom clothing
             </p>
           </div>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-3">
             {testimonials.map((testimonial, index) => (
               <Card key={index}>
-                <CardContent className="pt-6">
-                  <p className="text-muted-foreground mb-4">
+                <CardContent className="pt-4 md:pt-6">
+                  <p className="text-sm sm:text-base text-muted-foreground mb-3 md:mb-4 leading-relaxed">
                     &ldquo;{testimonial.text}&rdquo;
                   </p>
-                  <p className="font-semibold">— {testimonial.name}</p>
+                  <p className="font-semibold text-sm sm:text-base">— {testimonial.name}</p>
                 </CardContent>
               </Card>
             ))}
@@ -166,11 +166,11 @@ export default async function HomePage() {
       </section>
 
       {/* FAQ */}
-      <section className="py-16">
+      <section className="py-12 md:py-16">
         <div className="container max-w-3xl">
-          <div className="text-center space-y-4 mb-12">
-            <h2 className="text-3xl font-bold">Frequently Asked Questions</h2>
-            <p className="text-muted-foreground">
+          <div className="text-center space-y-3 md:space-y-4 mb-8 md:mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold">Frequently Asked Questions</h2>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Everything you need to know about our custom toddler clothing
             </p>
           </div>
@@ -179,14 +179,14 @@ export default async function HomePage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-16 bg-gradient-to-br from-primary/10 to-secondary/10">
-        <div className="container text-center space-y-6">
-          <h2 className="text-3xl font-bold">Ready to Order Custom Clothing?</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+      <section className="py-12 md:py-16 bg-gradient-to-br from-primary/10 to-secondary/10">
+        <div className="container text-center space-y-4 md:space-y-6">
+          <h2 className="text-2xl sm:text-3xl font-bold">Ready to Order Custom Clothing?</h2>
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Get started today and create the perfect custom toddler clothing & accessories for your little one.
           </p>
-          <div className="flex flex-col items-center gap-4">
-            <Button asChild size="lg">
+          <div className="flex flex-col items-center gap-3 md:gap-4">
+            <Button asChild size="lg" className="min-h-[44px]">
               <Link href="/custom-order">{siteConfig.cta.order}</Link>
             </Button>
             <SocialButtons />

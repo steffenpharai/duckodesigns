@@ -2,43 +2,11 @@
 
 import { signIn } from "next-auth/react"
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 
 export default function SignInPage() {
-  const router = useRouter()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
-
-  const handleCredentialsSignIn = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
-
-    try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      })
-
-      if (result?.error) {
-        setError("Invalid email or password")
-      } else {
-        router.push("/account")
-        router.refresh()
-      }
-    } catch (error) {
-      setError("An error occurred. Please try again.")
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
@@ -48,65 +16,21 @@ export default function SignInPage() {
   return (
     <div className="container py-12 max-w-md">
       <Card>
-        <CardHeader>
+        <CardHeader className="text-center">
           <CardTitle className="text-2xl">Sign In</CardTitle>
+          <CardDescription>
+            Sign in with your Google account to continue
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleCredentialsSignIn} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={isLoading}
-              />
-            </div>
-
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Signing in..." : "Sign In"}
-            </Button>
-          </form>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
-              </span>
-            </div>
-          </div>
-
           <Button
             type="button"
-            variant="outline"
             className="w-full"
             onClick={handleGoogleSignIn}
             disabled={isLoading}
+            size="lg"
           >
-            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+            <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                 fill="#4285F4"
@@ -124,15 +48,13 @@ export default function SignInPage() {
                 fill="#EA4335"
               />
             </svg>
-            Sign in with Google
+            {isLoading ? "Signing in..." : "Sign in with Google"}
           </Button>
 
-          <div className="text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
-            <a href="/auth/register" className="text-primary hover:underline">
-              Sign up
-            </a>
-          </div>
+          <p className="text-center text-sm text-muted-foreground">
+            By signing in, you agree to our terms of service and privacy policy.
+            New users will be automatically created when signing in for the first time.
+          </p>
         </CardContent>
       </Card>
     </div>

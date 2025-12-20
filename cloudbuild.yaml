@@ -6,6 +6,8 @@ substitutions:
   # _DATABASE_URL_BUILD: Set this when triggering build (uses public IP for Cloud Build)
   # Get from secret: gcloud secrets versions access latest --secret=database-url --project=PROJECT_ID
   # Cloud Run uses Secret Manager directly via --update-secrets flag
+  # _GOOGLE_CLIENT_ID: Optional - Set when triggering build to automatically configure Google OAuth
+  # If not set, configure manually after deployment: gcloud run services update duckodesigns --update-env-vars="GOOGLE_CLIENT_ID=your-client-id"
 
 steps:
   # Build the container image
@@ -65,11 +67,26 @@ steps:
       - '--add-cloudsql-instances'
       - '${_CLOUD_SQL_CONNECTION_NAME}'
       - '--update-secrets'
-      - 'DATABASE_URL=cloud-run-database-url:latest,NEXTAUTH_SECRET=nextauth-secret:latest'
+      - 'DATABASE_URL=cloud-run-database-url:latest,NEXTAUTH_SECRET=nextauth-secret:latest,GOOGLE_CLIENT_SECRET=google-client-secret:latest'
       - '--update-env-vars'
       - 'GCS_BUCKET_NAME=duckodesigns-order-images,GCS_PROJECT_ID=$PROJECT_ID'
     id: 'deploy-cloud-run'
     waitFor: ['push-image-latest']
+
+  # Set Google OAuth Client ID (if provided as substitution)
+  # Note: You can also set this manually after deployment or via substitution variable
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: bash
+    args:
+      - '-c'
+      - |
+        if [ -n "$${_GOOGLE_CLIENT_ID}" ]; then
+          gcloud run services update ${_SERVICE_NAME} \
+            --region ${_REGION} \
+            --update-env-vars="GOOGLE_CLIENT_ID=$${_GOOGLE_CLIENT_ID}"
+        fi
+    id: 'set-google-client-id'
+    waitFor: ['deploy-cloud-run']
 
   # Ensure public access is enabled
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -86,7 +103,7 @@ steps:
       - '--role'
       - 'roles/run.invoker'
     id: 'set-public-access'
-    waitFor: ['deploy-cloud-run']
+    waitFor: ['set-google-client-id']
 
   # Set NEXTAUTH_URL dynamically after deployment
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'

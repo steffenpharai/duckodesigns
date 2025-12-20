@@ -245,7 +245,41 @@ This will create:
 - `cloud-run-database-url`: Database connection string for Cloud Run
 - `nextauth-secret`: NextAuth.js secret (auto-generated if not provided)
 
-5. **Set up Cloud Storage bucket** (for order images):
+5. **Set up Google OAuth** (required for authentication):
+
+   a. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+   
+   b. Create OAuth 2.0 Client ID credentials:
+      - Application type: Web application
+      - Authorized redirect URIs:
+        - `http://localhost:3000/api/auth/callback/google` (for local development)
+        - `https://your-domain.com/api/auth/callback/google` (for production)
+        - `https://your-cloud-run-url.a.run.app/api/auth/callback/google` (for Cloud Run)
+   
+   c. Save the Client ID and Client Secret
+   
+   d. Create Secret Manager secrets:
+   
+   ```powershell
+   # Store Google Client Secret in Secret Manager
+   echo -n "your-google-client-secret" | gcloud secrets create google-client-secret --data-file=- --project=your-project-id
+   
+   # Or if secret already exists, add a new version:
+   echo -n "your-google-client-secret" | gcloud secrets versions add google-client-secret --data-file=- --project=your-project-id
+   ```
+   
+   e. Set Google Client ID as substitution variable in Cloud Build (or as environment variable):
+   
+   ```powershell
+   # For Cloud Build, you can set it as a substitution variable when triggering builds
+   # Or set it as an environment variable in Cloud Run after deployment
+   gcloud run services update duckodesigns \
+     --region us-central1 \
+     --update-env-vars="GOOGLE_CLIENT_ID=your-google-client-id" \
+     --project your-project-id
+   ```
+
+6. **Set up Cloud Storage bucket** (for order images):
 
 ```powershell
 .\scripts\setup-storage.ps1 -ProjectId "your-project-id" -BucketName "duckodesigns-order-images"
@@ -360,6 +394,7 @@ gcloud run services update duckodesigns `
 The service is configured to use Secret Manager for:
 - `DATABASE_URL` - Loaded from `cloud-run-database-url` secret
 - `NEXTAUTH_SECRET` - Loaded from `nextauth-secret` secret
+- `GOOGLE_CLIENT_SECRET` - Loaded from `google-client-secret` secret
 
 To update secrets:
 
@@ -383,6 +418,7 @@ gcloud run services update duckodesigns `
 **Current Secrets Configuration**:
 - `DATABASE_URL` → `cloud-run-database-url:latest`
 - `NEXTAUTH_SECRET` → `nextauth-secret:latest`
+- `GOOGLE_CLIENT_SECRET` → `google-client-secret:latest`
 
 ### Database Migrations
 
@@ -643,11 +679,27 @@ gcloud projects get-iam-policy your-project-id --flatten="bindings[].members" --
 - `GCS_BUCKET_NAME`: Cloud Storage bucket name for order images (e.g., `duckodesigns-order-images`)
 - `GCS_PROJECT_ID`: Your GCP project ID
 - `NEXTAUTH_URL`: The public URL of your Cloud Run service (automatically set by Cloud Build)
+- `GOOGLE_CLIENT_ID`: Your Google OAuth Client ID (not sensitive, can be env var)
 
 #### Secrets (Stored in Secret Manager)
 
 - `DATABASE_URL`: PostgreSQL connection string (stored in `cloud-run-database-url` secret)
 - `NEXTAUTH_SECRET`: NextAuth.js secret key (stored in `nextauth-secret` secret)
+- `GOOGLE_CLIENT_SECRET`: Google OAuth Client Secret (stored in `google-client-secret` secret)
+
+#### Authentication
+
+The application uses **Google OAuth** exclusively for authentication. Users sign in with their Google account, and new users are automatically created with the CUSTOMER role upon first sign-in. Admins can manage user roles through the admin panel.
+
+**Required for Authentication**:
+- `GOOGLE_CLIENT_ID`: Google OAuth Client ID (set as environment variable)
+- `GOOGLE_CLIENT_SECRET`: Google OAuth Client Secret (stored in Secret Manager)
+
+**Setting up Google OAuth**:
+1. Create OAuth 2.0 credentials in [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+2. Add authorized redirect URIs for your application
+3. Store the Client Secret in Secret Manager
+4. Set the Client ID as an environment variable
 
 #### Optional Environment Variables (Future Integrations)
 
@@ -655,8 +707,6 @@ When you integrate with external services, add these:
 
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (for Stripe - public, can be env var)
 - `STRIPE_SECRET_KEY` (for Stripe - should be in Secret Manager)
-- `GOOGLE_CLIENT_ID` (for Google OAuth - can be env var)
-- `GOOGLE_CLIENT_SECRET` (for Google OAuth - should be in Secret Manager)
 - `NEXT_PUBLIC_SUPABASE_URL` (for Supabase - public, can be env var)
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (for Supabase - public, can be env var)
 

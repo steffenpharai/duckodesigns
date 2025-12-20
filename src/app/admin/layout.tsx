@@ -21,6 +21,7 @@ export default async function AdminLayout({
     { href: "/admin/products", label: "Products" },
     { href: "/admin/orders", label: "Orders" },
     { href: "/admin/inventory", label: "Inventory" },
+    { href: "/admin/users", label: "Users" },
   ]
 
   return (
